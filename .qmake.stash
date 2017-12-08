@@ -1,0 +1,2 @@
+QMAKE_CXX.INCDIRS = C:\\MinGW\\include
+QMAKE_CXX.LIBDIRS = C:\\MinGW\\lib
