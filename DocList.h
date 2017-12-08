@@ -7,7 +7,6 @@ public:
 	int DocID;//出现该单词的文档ID
 	int Times;//单词的出现次数
 	int count;//该文档出现了多少个关键词,在后续文档链表的合并时使用
-	//int totalWeight();//返回总权重，文档链表根据总权重进行排序
 	DocNodePosi prev; DocNodePosi succ;//前驱和后继
 	DocNode(int DocID=-1, int Times=0, DocNodePosi prev = NULL, DocNodePosi succ = NULL);//创建一个节点
 	DocNodePosi insertAsNext(int DocID, int Times);//作为当前节点的后继节点插入一个新的节点
@@ -42,6 +41,10 @@ public:
 	void debug()const;//打印文档链表的信息
 	void Add(const DocList& rhs);//增加另外一个文档链表中的所有元素（用于链表合并）
 	friend std::ostream& operator<<(std::ostream& out,const DocList& list);//将整个链表输出到out中
+
+    DocNodePosi first()const{return header->succ;}//首元素
+    DocNodePosi next(DocNodePosi p)const{return p->succ;}//下一个元素
+    bool isValid(DocNodePosi p)const {return p && p!=header && p!=trailer;}//p是否为合法节点
 };
 
 

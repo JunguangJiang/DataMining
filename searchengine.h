@@ -1,35 +1,30 @@
-#ifndef SEARCHENGINE_H
-#define SEARCHENGINE_H
-#include <QObject>
+#pragma once
 #include "BBST.h"
 #include "CharString.h"
-#include "CharStringLink.h"
-#include "Dictionary.h"
 #include <ostream>
 #include "DocList.h"
 #include <memory>
-#include <vector>
-class SearchEngine
+#include "Dictionary.h"
+#include "Record.h"
+class SearchEngine//ËÑËØÒıÇæ
 {
-    std::shared_ptr<Dictionary> dictionary;//è¯å…¸æŒ‡é’ˆ
-    BBST* bbst;//å¹³è¡¡äºŒå‰æ ‘
-    const int weight;
-    std::vector<CharString> content;//å­˜å‚¨æ‰€æœ‰çš„å‘å¸–å†…å®¹
-    void searchWordList(const CharStringLink& wordList, std::ostream& out);//æœç´¢è¯ï¼Œè¿”å›æœç´ ç»“æœ
-
+    std::shared_ptr<BBST> bbst;//Æ½ºâ¶ş²æÊ÷
+	const int weight;
+    std::shared_ptr<Dictionary> dictionary;//´ÊµäÖ¸Õë
+    std::vector<Record> records;//´æ´¢ËùÓĞµÄ·¢Ìû¼ÇÂ¼
 public:
-    SearchEngine(int weight = 10);
-    ~SearchEngine(void);
-    void extractInfo();//é¦–å…ˆä»ä¸‹è½½çš„ç½‘é¡µä¸­æå–ä¿¡æ¯
-    void initDictionary();//åˆå§‹åŒ–è¯åº“
+	SearchEngine(int weight = 10);
+	~SearchEngine(void);
+	void buildInvertedFile(const CharString& infile, const CharString& outfile);//´Ó±¾µØÎÄ¼şinfile¶ÁÈ¡ĞÅÏ¢£¬¹¹½¨µ¹ÅÅÎÄµµ,Êä³öµ½outfile
+    std::shared_ptr<DocList> searchWordList(const CharStringLink& wordList, std::ostream& out);//ËÑË÷´Ê£¬·µ»ØËÑËØ½á¹û
+    std::shared_ptr<DocList> searchSentences(std::vector<CharString> sentences, std::ostream& out);//ÏÈ¶ÔÃ¿¸ö¾ä×Ó½øĞĞ·Ö´Ê£¬È»ºóËÑË÷¶à¸ö¹Ø¼ü´Ê£¬·µ»ØËÑËØ½á¹û
+	void query(const CharString& queryFile, const CharString& resultFile);//½øĞĞÅúÁ¿²éÑ¯£¬²éÑ¯ÎÄ¼şÎªqueryFile,½á¹ûÎÄ¼şÎªresultFile
+
+    void initDictionary();//³õÊ¼»¯´Ê¿â
     void initDictionary(const CharString& mainDictionary,const CharString& professionalTerm);
 
-    CharStringLink divideWords(const CharString& sentence, bool removeUselessWords);//å¯¹å¥å­è¿›è¡Œåˆ†è¯
-    //å¦‚æœremoveUselessWordsä¸ºtrueï¼Œåˆ™åˆ†è¯ç»“æœå°±ä¼šåˆ é™¤æ— ç”¨è¯ï¼›ä¸ºfalseï¼Œåˆ™ä¿ç•™æ— ç”¨è¯
-
-    void buildInvertedFile(const CharString& infile, const CharString& outfile);//ä»æœ¬åœ°æ–‡ä»¶infileè¯»å–ä¿¡æ¯ï¼Œæ„å»ºå€’æ’æ–‡æ¡£,è¾“å‡ºåˆ°outfile
-    void searchSentences(std::vector<CharString> sentences, std::ostream& out);//å…ˆå¯¹æ¯ä¸ªå¥å­è¿›è¡Œåˆ†è¯ï¼Œç„¶åæœç´¢å¤šä¸ªå…³é”®è¯ï¼Œè¿”å›æœç´ ç»“æœ
-    void query(const CharString& queryFile, const CharString& resultFile);//è¿›è¡Œæ‰¹é‡æŸ¥è¯¢ï¼ŒæŸ¥è¯¢æ–‡ä»¶ä¸ºqueryFile,ç»“æœæ–‡ä»¶ä¸ºresultFile
+    CharStringLink divideWords(const CharString& sentence, bool removeUselessWords);//¶Ô¾ä×Ó½øĞĞ·Ö´Ê
+    //Èç¹ûremoveUselessWordsÎªtrue£¬Ôò·Ö´Ê½á¹û¾Í»áÉ¾³ıÎŞÓÃ´Ê£»Îªfalse£¬Ôò±£ÁôÎŞÓÃ´Ê
+    Record getNthRecord(int i)const;//·µ»Ø±àºÅÎªiµÄÌû×Ó¼ÇÂ¼assert:0<i<=×î´ó±àºÅ
 };
 
-#endif // SEARCHENGINE_H

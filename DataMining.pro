@@ -27,21 +27,23 @@ SOURCES += \
         main.cpp \
         dialog.cpp \
     CharString.cpp \
-    searchengine.cpp \
     BBST.cpp \
     CharStringLink.cpp \
     Dictionary.cpp \
-    DocList.cpp
+    DocList.cpp \
+    SearchEngine.cpp \
+    Record.cpp
 
 HEADERS += \
         dialog.h \
     CharString.h \
-    searchengine.h \
     BBST.h \
     CharStringLink.h \
     Dictionary.h \
     DocList.h \
-    Stack.h
+    Stack.h \
+    SearchEngine.h \
+    Record.h
 
 FORMS += \
         dialog.ui

@@ -1,11 +1,11 @@
-#include "searchengine.h"
-#include <QProcess>
-#include <QDebug>
+#include "SearchEngine.h"
+#include "DocList.h"
 #include <fstream>
+#include <vector>
 using namespace std;
-SearchEngine::SearchEngine(int weight):weight(weight)
+SearchEngine::SearchEngine(int weight): weight(weight)
 {
-    bbst = new BBST();
+        bbst = make_shared<BBST>();
 }
 
 
@@ -13,108 +13,110 @@ SearchEngine::~SearchEngine(void)
 {
 }
 
-void SearchEngine::buildInvertedFile(const CharString& infile, const CharString& outfile){//ä»æœ¬åœ°æ–‡ä»¶è¯»å–ä¿¡æ¯ï¼Œæ„å»ºå€’æ’æ–‡æ¡£
-    ifstream in;
-    in.open(infile.data());
-    if(!in){
-        cout << "error in open inverted file "<< infile << endl;
-        exit(-1);
-    }
-    ofstream out;
-    out.open(outfile.data());
-    if(!out){
-        cout << "error in open inverted file "<< outfile << endl;
-        exit(-1);
-    }
-    string line; getline(in, line);//è¯»å…¥çš„ç¬¬ä¸€è¡Œå†…å®¹æ— ç”¨
-    int DocID = 0;//æ–‡æ¡£ç¼–å·
-    while(!in.eof()){//ä¸€ç›´è¾“å…¥åˆ°æ–‡ä»¶çš„æœ«å°¾
-        getline(in, line);CharString string(line); //ä»æ–‡ä»¶ä¸­è¯»å…¥ä¸€è¡Œ
-        DocID++;//æ–‡æ¡£ç¼–å·é€’å¢
-        vector<CharString> v = string.split(CharString("||"));//å°†ä¸€è¡Œçš„å­—ç¬¦ä¸²åˆ‡åˆ†æˆå¤šä¸ªå­ä¸²
-        if(v.size()<9){//å¦‚æœè¯¥è¡Œä¿¡æ¯ä¸å®Œæ•´ï¼Œåˆ™è·³è¿‡è¯¥è¡Œ
-            content.push_back(CharString(""));
-            continue;
-        }
-        content.push_back(v[5]);//å¾—åˆ°å‘å¸–å†…å®¹
-        vector<CharString> dividedWordList = v[9].split(CharString(" "));//å¾—åˆ°åˆ†è¯ç»“æœ
-        for(int i=0; i<dividedWordList.size(); i++){//éå†æ‰€æœ‰çš„åˆ†è¯ç»“æœ
-            CharString word = dividedWordList[i];//ç¬¬iä¸ªåˆ†è¯
-            if(word.size() == 0) continue;//è·³è¿‡æ‰€æœ‰ç©ºè¯
-            BinNodePosi p = bbst->Insert(word);//æ— è®ºæ’å…¥æ˜¯å¦æˆåŠŸï¼Œè¿”å›çš„èŠ‚ç‚¹på¯¹åº”çš„å•è¯éƒ½æ˜¯word
-            p->docList->Add(DocID);//å‘å•è¯çš„æ–‡æ¡£é“¾è¡¨ä¸­åŠ å…¥å½“å‰æ–‡æ¡£çš„ç¼–å·
-        }
-    }
-    out << DocID << endl;//è¾“å‡ºæ–‡æ¡£çš„æ€»æ•°
-    for(int i = 0; i<content.size(); i++){
-        out << content[i] << endl;//è¾“å‡ºæ‰€æœ‰çš„å‘å¸–å†…å®¹
-    }
-    bbst->debug(bbst->root());//æ‰“å°æ•´é¢—æ ‘
+void SearchEngine::buildInvertedFile(const CharString& infile, const CharString& outfile){//´Ó±¾µØÎÄ¼ş¶ÁÈ¡ĞÅÏ¢£¬¹¹½¨µ¹ÅÅÎÄµµ
+	ifstream in;
+	in.open(infile.data());
+	if(!in){
+		cout << "error in open inverted file "<< infile << endl;
+		exit(-1);
+	}
+	ofstream out;
+	out.open(outfile.data());
+	if(!out){
+		cout << "error in open inverted file "<< outfile << endl;
+		exit(-1);
+	}
+	string line; getline(in, line);//¶ÁÈëµÄµÚÒ»ĞĞÄÚÈİÎŞÓÃ
+	int DocID = 0;//ÎÄµµ±àºÅ
+	while(!in.eof()){//Ò»Ö±ÊäÈëµ½ÎÄ¼şµÄÄ©Î²
+		getline(in, line);CharString string(line); //´ÓÎÄ¼şÖĞ¶ÁÈëÒ»ĞĞ
+		DocID++;//ÎÄµµ±àºÅµİÔö
+		vector<CharString> v = string.split(CharString("||"));//½«Ò»ĞĞµÄ×Ö·û´®ÇĞ·Ö³É¶à¸ö×Ó´®
+                if(v.size()<9){
+                    records.push_back(Record());//²åÈëÒ»Ìõ¿Õ¼ÇÂ¼
+                    continue;//Èç¹û¸ÃĞĞĞÅÏ¢²»ÍêÕû£¬ÔòÌø¹ı¸ÃĞĞ
+                }
+                records.push_back(Record(v[4], v[5]));//¼ÇÂ¼Ä¿Ç°Ö»¼ÇÂ¼·¢Ìû±êÌâºÍ·¢ÌûÄÚÈİ
+		vector<CharString> dividedWordList = v[9].split(CharString(" "));//µÃµ½·Ö´Ê½á¹û
+		for(int i=0; i<dividedWordList.size(); i++){//±éÀúËùÓĞµÄ·Ö´Ê½á¹û
+			CharString word = dividedWordList[i];//µÚi¸ö·Ö´Ê
+			if(word.size() == 0) continue;//Ìø¹ıËùÓĞ¿Õ´Ê
+			BinNodePosi p = bbst->Insert(word);//ÎŞÂÛ²åÈëÊÇ·ñ³É¹¦£¬·µ»ØµÄ½Úµãp¶ÔÓ¦µÄµ¥´Ê¶¼ÊÇword
+			p->docList->Add(DocID);//Ïòµ¥´ÊµÄÎÄµµÁ´±íÖĞ¼ÓÈëµ±Ç°ÎÄµµµÄ±àºÅ
+		}
+	}
+	out << DocID << endl;//Êä³öÎÄµµµÄ×ÜÊı
+        for(int i = 0; i<records.size(); i++){
+                out << records[i].content << endl;//Êä³öËùÓĞµÄ·¢ÌûÄÚÈİ
+	}
+	bbst->debug(bbst->root());//´òÓ¡Õû¿ÅÊ÷
 }
 
-void SearchEngine::searchWordList(const CharStringLink& wordList, ostream& out){
-    DocList docList(-1, weight);
-    for(auto p = wordList.first(); wordList.isValid(p); p = wordList.next(p)){//å°†æ¯ä¸ªå…³é”®è¯å¯¹åº”çš„æ–‡æ¡£é“¾è¡¨
-        docList.Add(*(bbst->Search(p->data)->docList));//éƒ½åŠ å…¥åˆ°docListä¸­
-    }
-    out << docList << endl;
+std::shared_ptr<DocList> SearchEngine::searchWordList(const CharStringLink& wordList, ostream& out){
+        std::shared_ptr<DocList> docList = make_shared<DocList>(-1, weight);
+	for(auto p = wordList.first(); wordList.isValid(p); p = wordList.next(p)){//½«Ã¿¸ö¹Ø¼ü´Ê¶ÔÓ¦µÄÎÄµµÁ´±í
+                BinNodePosi node = bbst->Search(p->data);//²éÑ¯Ã¿¸öµ¥´ÊÔÚbbstÖĞµÄÎ»ÖÃ
+                if(node){//Ö»ÓĞbbstÖĞ´æÔÚ¸Ãµ¥´ÊÊ±£¬²Å½«Æä¶ÔÓ¦µÄÎÄµµÁ´±í
+                        docList->Add(*(node->docList));//¶¼ºÏ²¢µ½docListÖĞ
+        	}
+	}
+        out << *docList << endl;
+        return docList;
 }
 
-void SearchEngine::searchSentences(std::vector<CharString> sentences, std::ostream& out){
-        CharStringLink wordList;//æ‰€æœ‰çš„å…³é”®è¯é›†åˆ
-        for(int i=0; i<sentences.size(); i++){//å°†æ¯ä¸ªå¥å­
-            wordList.add(divideWords(sentences[i], true));//åˆ†è§£æˆå…³é”®è¯ååŠ å…¥wordList(å¥å­åˆ†è¯æš‚æ—¶é‡‡ç”¨å»é™¤æ— ç”¨è¯ï¼‰
+std::shared_ptr<DocList> SearchEngine::searchSentences(std::vector<CharString> sentences, std::ostream& out){
+        CharStringLink wordList;//ËùÓĞµÄ¹Ø¼ü´Ê¼¯ºÏ
+        for(int i=0; i<sentences.size(); i++){//½«Ã¿¸ö¾ä×Ó
+                wordList.add(divideWords(sentences[i], true));//·Ö½â³É¹Ø¼ü´Êºó¼ÓÈëwordList(¾ä×Ó·Ö´ÊÔİÊ±²ÉÓÃÈ¥³ıÎŞÓÃ´Ê£©
         }
-        searchWordList(wordList,out);//å¯¹å¾—åˆ°çš„å…³é”®è¯é›†åˆè¿›è¡ŒæŸ¥è¯¢
+        return searchWordList(wordList,out);//¶ÔµÃµ½µÄ¹Ø¼ü´Ê¼¯ºÏ½øĞĞ²éÑ¯
 }
 
 void SearchEngine::query(const CharString& queryFile, const CharString& resultFile){
-    //è¿›è¡Œæ‰¹é‡æŸ¥è¯¢ï¼ŒæŸ¥è¯¢æ–‡ä»¶ä¸ºqueryFile,ç»“æœæ–‡ä»¶ä¸ºresultFile
-    ifstream in;
-    in.open(queryFile.data());
-    if(!in){
-        cout << "error in open inverted file "<< queryFile << endl;
-        exit(-1);
+	//½øĞĞÅúÁ¿²éÑ¯£¬²éÑ¯ÎÄ¼şÎªqueryFile,½á¹ûÎÄ¼şÎªresultFile
+	ifstream in;
+	in.open(queryFile.data());
+	if(!in){
+		cout << "error in open inverted file "<< queryFile << endl;
+		exit(-1);
+	}
+	ofstream out;
+	out.open(resultFile.data());
+	if(!out){
+		cout << "error in open inverted file "<< resultFile << endl;
+		exit(-1);
+	}
+	while(!in.eof()){
+		string temp; getline(in, temp);CharString line = temp;//¶ÁÈëÒ»ĞĞ
+		std::vector<CharString> sentences = line.split(CharString(" "));//¸ù¾İ¿Õ¸ñ½«¸ÃĞĞ·Ö³É¶à¸ö¾ä×Ó
+		searchSentences(sentences, out);//È»ºó²éÑ¯ÕâĞ©¾ä×Ó
+	}
+}
+
+void SearchEngine::initDictionary(){//³õÊ¼»¯´Ê¿â
+        dictionary = make_shared<Dictionary>();//ĞÂ½¨Ò»¸ö´Ê¿â
+        dictionary->init();//´Ê¿â³õÊ¼»¯
+}
+
+void SearchEngine::initDictionary(const CharString& mainDictionary,const CharString& professionalTerm){//³õÊ¼»¯´Ê¿â
+        dictionary = make_shared<Dictionary>();//ĞÂ½¨Ò»¸ö´Ê¿â
+        dictionary->init(mainDictionary, professionalTerm);//´Ê¿â³õÊ¼»¯
+}
+
+CharStringLink SearchEngine::divideWords(const CharString& sentence, bool removeUselessWords){//¶Ô¾ä×Ó½øĞĞ·Ö´Ê
+        //Èç¹ûremoveUselessWordsÎªtrue£¬Ôò·Ö´Ê½á¹û¾Í»áÉ¾³ıÎŞÓÃ´Ê£»Îªfalse£¬Ôò±£ÁôÎŞÓÃ´Ê
+        if(!dictionary){
+                exit(-1);
+        }
+        return *dictionary->divideSentence(sentence, removeUselessWords);
+}
+
+Record SearchEngine::getNthRecord(int i)const{
+    if( 0 < i && i <= records.size() ){
+        return records[i-1];
+    }else{
+        return Record();
     }
-    ofstream out;
-    out.open(resultFile.data());
-    if(!out){
-        cout << "error in open inverted file "<< resultFile << endl;
-        exit(-1);
-    }
-    while(!in.eof()){
-        string temp; getline(in, temp);CharString line = temp;//è¯»å…¥ä¸€è¡Œ
-        std::vector<CharString> sentences = line.split(CharString(" "));//æ ¹æ®ç©ºæ ¼å°†è¯¥è¡Œåˆ†æˆå¤šä¸ªå¥å­
-        searchSentences(sentences, out);//ç„¶åæŸ¥è¯¢è¿™äº›å¥å­
-    }
-}
+}//·µ»Ø±àºÅÎªiµÄÌû×ÓµÄÄÚÈİassert:0<i<=×î´ó±àºÅ
 
-void SearchEngine::extractInfo(){
-    qDebug() << "-------------ä¸»ç¨‹åºè¿è¡Œä¸­-----------";
 
-    QProcess* process=new QProcess();
-     if(process->execute("Project.exe",QStringList()))
-     {
-         qDebug() << "å¤–éƒ¨ç¨‹åºhelloworld.exeè¿è¡ŒæˆåŠŸ";
-     }
-
-    qDebug() << "------------ä¸»ç¨‹åºç»§ç»­è¿è¡Œ-----------";    //ä¸ä¼šè¢«æ‰§è¡Œ
-}
-
-void SearchEngine::initDictionary(){//åˆå§‹åŒ–è¯åº“
-    dictionary = make_shared<Dictionary>();//æ–°å»ºä¸€ä¸ªè¯åº“
-    dictionary->init();//è¯åº“åˆå§‹åŒ–
-}
-
-void SearchEngine::initDictionary(const CharString& mainDictionary,const CharString& professionalTerm){//åˆå§‹åŒ–è¯åº“
-    dictionary = make_shared<Dictionary>();//æ–°å»ºä¸€ä¸ªè¯åº“
-    dictionary->init(mainDictionary, professionalTerm);//è¯åº“åˆå§‹åŒ–
-}
-
-CharStringLink SearchEngine::divideWords(const CharString& sentence, bool removeUselessWords){//å¯¹å¥å­è¿›è¡Œåˆ†è¯
-    //å¦‚æœremoveUselessWordsä¸ºtrueï¼Œåˆ™åˆ†è¯ç»“æœå°±ä¼šåˆ é™¤æ— ç”¨è¯ï¼›ä¸ºfalseï¼Œåˆ™ä¿ç•™æ— ç”¨è¯
-    if(!dictionary){
-        exit(-1);
-    }
-    return *dictionary->divideSentence(sentence, removeUselessWords);
-}

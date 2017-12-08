@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "searchengine.h"
+#include <QStandardItem>
 namespace Ui {
 class Dialog;
 }
@@ -19,8 +20,11 @@ private slots:
 
     void on_queryButton_clicked();
 
+    void on_detailedListView_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::Dialog *ui;
+    QStandardItemModel *standardItemModel;
     SearchEngine* searchEngine;
 
 };

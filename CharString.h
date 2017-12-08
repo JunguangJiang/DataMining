@@ -19,7 +19,6 @@ public:
 	CharString(const std::string& s);//用stl::string去初始化当前字符串
 	~CharString(void);//析构函数
 	CharString(const CharString& rhs);//拷贝构造函数
-
 	//---------------------------要求实现的方法----------------------------------------------------
 	int indexOf(const CharString& subString, const int pos)const;
 	//在目标字符串中,从pos的位置开始查找子串,

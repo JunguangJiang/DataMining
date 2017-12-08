@@ -2,7 +2,7 @@
 #include <limits>
 #include <iostream>
 #include <ostream>
-
+#include <QDebug>
 DocNode::DocNode(int DocID, int Times, DocNodePosi prev, DocNodePosi succ):
 	DocID(DocID), Times(Times), prev(prev), succ(succ), count(1){}
 
@@ -51,27 +51,6 @@ void DocList::swap(DocNodePosi p1, DocNodePosi p2){
 	std::swap(p1->count, p2->count);
 }
 
-/*
-DocNodePosi DocList::Add(int DocID){//添加文档
-	DocNodePosi p = NULL;
-	for(p = header->succ; p != trailer && p->DocID != DocID; p = p->succ){//遍历整个链表，
-	}
-	this->m_times++;//修改文档链表的单词总次数
-	if(p == trailer){//如果原先不存在文档DocID
-		this->m_size ++;//文档总数增加
-		return trailer->insertAsPred(DocID, 1);//则将DocID作为最后一个节点插入链表
-	}else{//如果原先存在文档
-		p->Times++;//则次数增加
-		DocNodePosi curr = p->prev;
-		while(curr->totalWeight() < p->totalWeight()){//只要curr的单词出现次数小于p
-			curr = curr->prev;//就继续向前走
-		}//终止时必然有curr->Times >= p->Times 且 curr->succ->Times<p->Times
-		swap(curr->succ, p); //只需要交换数据区，即可恢复排序
-		return curr->succ;//返回此时文档位置
-	}
-}
-*/
-
 DocNodePosi DocList::Add(int DocID, int Times){//添加文档
 	DocNodePosi p = NULL;
 	for(p = header->succ; p != trailer && p->DocID != DocID; p = p->succ){//遍历整个链表，
@@ -86,20 +65,6 @@ DocNodePosi DocList::Add(int DocID, int Times){//添加文档
 	}
 	return adjust(p);//返回调整次序后的位置
 }
-
-
-/*
-DocNodePosi DocList::Add(int DocID, int Times){//添加文档
-	DocNodePosi p = NULL;
-	for(p = header; p->Times>= Times; p = p->succ){
-		if(p->DocID == DocID) return NULL;//如果发现原先已经存在相同DocID的文档，则返回空，添加失败
-	}
-	//由于header->Times > Times > tailer->Times,因此循环必然在(header, tailer]处终止
-	this->m_times += Times;//修改文档链表的单词总次数
-	this->m_size ++;
-	return p->prev->insertAsNext(DocID, Times);//此时p->prev是次数大于等于Times中最小者，在其后添加文档
-}
-*/
 
 DocNodePosi DocList::Search(int DocID){//查询文档
 	DocNodePosi p = NULL;
@@ -118,17 +83,6 @@ DocNodePosi DocList::Edit(int DocID, int Times){//修改文档
 		return adjust(p);//返回调整后的位置
 	}
 }
-
-/*
-DocNodePosi DocList::Edit(int DocID, int Times){//修改文档
-	DocNodePosi p = NULL; 
-	int oldTimes = Remove(DocID);//首先尝试删除文档
-	if(oldTimes > 0){//如果文档存在
-		p = Add(DocID, Times);//重新添加一个新的文档
-	}
-	return p;//调用者通过p是否存在，判断修改是否成功
-}
-*/
 
 int DocList::Remove(int DocID){//删除文档
 	DocNodePosi p = Search(DocID);//首先查询文档

@@ -6,26 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>464</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="extractWebsiteButton">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>240</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>extract</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="queryButton">
    <property name="geometry">
     <rect>
@@ -61,15 +48,34 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPlainTextEdit" name="detailedResultEdit">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>120</y>
+     <y>300</y>
      <width>251</width>
      <height>101</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QListView" name="detailedListView">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>100</y>
+     <width>256</width>
+     <height>192</height>
+    </rect>
+   </property>
+   <property name="editTriggers">
+    <set>QAbstractItemView::NoEditTriggers</set>
    </property>
   </widget>
  </widget>
