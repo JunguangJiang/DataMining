@@ -25,7 +25,6 @@ protected:
 	//调整节点p使其有序 assert:无法处理p->prev<p 且p>p->succ的情况，二者至多有一个失序
 	//assert：p为非头尾节点
 	const int weight;//计算总权重时的参数，只有在链表合并时才使用weight>0!!!
-	int totalWeight(DocNodePosi p)const;//返回总权重，文档链表根据总权重进行排序
 public:
 	DocList(int TermID = -1, const int  weight = 0);
 	~DocList(void);
@@ -45,6 +44,9 @@ public:
     DocNodePosi first()const{return header->succ;}//首元素
     DocNodePosi next(DocNodePosi p)const{return p->succ;}//下一个元素
     bool isValid(DocNodePosi p)const {return p && p!=header && p!=trailer;}//p是否为合法节点
+
+    int totalWeight(DocNodePosi p)const;//返回总权重，文档链表根据总权重进行排序
+
 };
 
 

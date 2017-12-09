@@ -13,18 +13,18 @@ SearchEngine::~SearchEngine(void)
 {
 }
 
-void SearchEngine::buildInvertedFile(const CharString& infile, const CharString& outfile){//从本地文件读取信息，构建倒排文档
+bool SearchEngine::buildInvertedFile(const CharString& infile, const CharString& outfile){//从本地文件读取信息，构建倒排文档
 	ifstream in;
 	in.open(infile.data());
 	if(!in){
 		cout << "error in open inverted file "<< infile << endl;
-		exit(-1);
+                return false;
 	}
 	ofstream out;
 	out.open(outfile.data());
 	if(!out){
 		cout << "error in open inverted file "<< outfile << endl;
-		exit(-1);
+                return false;
 	}
 	string line; getline(in, line);//读入的第一行内容无用
 	int DocID = 0;//文档编号
@@ -36,7 +36,7 @@ void SearchEngine::buildInvertedFile(const CharString& infile, const CharString&
                     records.push_back(Record());//插入一条空记录
                     continue;//如果该行信息不完整，则跳过该行
                 }
-                records.push_back(Record(v[4], v[5]));//记录目前只记录发帖标题和发帖内容
+                records.push_back(Record(v[4], v[5], v[6], v[7], v[8], v[1], v[2], v[3]));//记录目前只记录发帖标题和发帖内容
 		vector<CharString> dividedWordList = v[9].split(CharString(" "));//得到分词结果
 		for(int i=0; i<dividedWordList.size(); i++){//遍历所有的分词结果
 			CharString word = dividedWordList[i];//第i个分词
@@ -49,7 +49,8 @@ void SearchEngine::buildInvertedFile(const CharString& infile, const CharString&
         for(int i = 0; i<records.size(); i++){
                 out << records[i].content << endl;//输出所有的发帖内容
 	}
-	bbst->debug(bbst->root());//打印整颗树
+        //bbst->debug(bbst->root());//打印整颗树
+        return true;
 }
 
 std::shared_ptr<DocList> SearchEngine::searchWordList(const CharStringLink& wordList, ostream& out){
@@ -65,11 +66,20 @@ std::shared_ptr<DocList> SearchEngine::searchWordList(const CharStringLink& word
 }
 
 std::shared_ptr<DocList> SearchEngine::searchSentences(std::vector<CharString> sentences, std::ostream& out){
-        CharStringLink wordList;//所有的关键词集合
-        for(int i=0; i<sentences.size(); i++){//将每个句子
-                wordList.add(divideWords(sentences[i], true));//分解成关键词后加入wordList(句子分词暂时采用去除无用词）
-        }
-        return searchWordList(wordList,out);//对得到的关键词集合进行查询
+    CharStringLink wordList;//所有的关键词集合
+    for(int i=0; i<sentences.size(); i++){//将每个句子
+            wordList.add(divideWords(sentences[i], true));//分解成关键词后加入wordList(句子分词暂时采用去除无用词）
+    }
+    return searchWordList(wordList, out);
+    //return searchWordList(getWordListFromSentence(sentences),out);//对得到的关键词集合进行查询
+}
+
+const CharStringLink SearchEngine::getWordListFromSentence(std::vector<CharString> sentences){//对一组句子进行分词得到对应的单词链表
+    CharStringLink wordList;//所有的关键词集合
+    for(int i=0; i<sentences.size(); i++){//将每个句子
+            wordList.add(divideWords(sentences[i], true));//分解成关键词后加入wordList(句子分词暂时采用去除无用词）
+    }
+    return wordList;
 }
 
 void SearchEngine::query(const CharString& queryFile, const CharString& resultFile){

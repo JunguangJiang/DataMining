@@ -24,9 +24,9 @@ private slots:
 
 private:
     Ui::Dialog *ui;
-    QStandardItemModel *standardItemModel;
-    SearchEngine* searchEngine;
-
+    QStandardItemModel *standardItemModel;//帖子显示列表对应的模型
+    SearchEngine* searchEngine;//搜索引擎
+    std::shared_ptr<DocList> docList;//搜索得到的文档链表
 };
 
 #endif // DIALOG_H

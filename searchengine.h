@@ -15,10 +15,11 @@ class SearchEngine//搜素引擎
 public:
 	SearchEngine(int weight = 10);
 	~SearchEngine(void);
-	void buildInvertedFile(const CharString& infile, const CharString& outfile);//从本地文件infile读取信息，构建倒排文档,输出到outfile
+    bool buildInvertedFile(const CharString& infile, const CharString& outfile);//从本地文件infile读取信息，构建倒排文档,输出到outfile
     std::shared_ptr<DocList> searchWordList(const CharStringLink& wordList, std::ostream& out);//搜索词，返回搜素结果
     std::shared_ptr<DocList> searchSentences(std::vector<CharString> sentences, std::ostream& out);//先对每个句子进行分词，然后搜索多个关键词，返回搜素结果
-	void query(const CharString& queryFile, const CharString& resultFile);//进行批量查询，查询文件为queryFile,结果文件为resultFile
+    const CharStringLink getWordListFromSentence(std::vector<CharString> sentences);//对一组句子进行分词得到对应的单词链表
+    void query(const CharString& queryFile, const CharString& resultFile);//进行批量查询，查询文件为queryFile,结果文件为resultFile
 
     void initDictionary();//初始化词库
     void initDictionary(const CharString& mainDictionary,const CharString& professionalTerm);

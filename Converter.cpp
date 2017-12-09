@@ -1,7 +1,8 @@
-#include "stdafx.h"
 #include "Converter.h"
 using namespace std;
-
+#include <QDebug>
+#include <iostream>
+#include "convert_qstr_str.h"
 int inline stringToValue(const CharString& string){//»ñµÃÒ»¸ö×Ö·û´®µÄÊıÖµ´óĞ¡
 	int value = 0;
 	for(int i=0; i<string.size(); i++){
@@ -12,10 +13,7 @@ int inline stringToValue(const CharString& string){//»ñµÃÒ»¸ö×Ö·û´®µÄÊıÖµ´óĞ¡
 }
 
 CharString UnicodeToChinese(const CharString& sentence){//½«Unicode±àÂë×ª»¯ÎªÖĞÎÄ
-	typedef std::codecvt_byname<wchar_t, char, mbstate_t> WCHAR_GBK;
-	const char* GBK_NAME = ".936";
-	std::wstring_convert<WCHAR_GBK> cvtGBK(new WCHAR_GBK(GBK_NAME));//½âÂë×ª»¯Æ÷
-	CharString result;//·µ»ØµÄÖĞÎÄ×Ö·û´®
+    CharString result;//·µ»ØµÄÖĞÎÄ×Ö·û´®
 	int left=-1, right=-1;
 	while(true){//ÔÚÔ­À´µÄunicode×Ö·û´®ÖĞ
 		left = sentence.indexOf("&#", left+1);//ÕÒµ½ĞÎÈç"&#25105;"µÄ×Ó´®µÄ¿ªÍ·
@@ -26,17 +24,15 @@ CharString UnicodeToChinese(const CharString& sentence){//½«Unicode±àÂë×ª»¯ÎªÖĞÎ
 			right = sentence.indexOf(";", right+1);//ÕÒµ½ĞÎÈç"&#25105;"µÄ×Ó´®µÄ½áÎ²
 
 			CharString word = sentence.subString(left+2, right);//È¡³öÆäÖĞµÄÊı×Ö²¿·Ö25105
-			int value = stringToValue(word);//»ñµÃÆä¶ÔÓ¦µÄÊıÖµ
-			wchar_t uchar = value;//½«Æä×ª»¯Îªwchar_t
-			wstring ustring; ustring.push_back(uchar);//×ª»¯Îªustring
-			result.concat( cvtGBK.to_bytes(ustring) );//×îºó½«ustring×ª»¯ÎªCharString£¬¼ÓÈëµ½½á¹ûµÄÖĞÎÄ×Ö·û´®ÖĞ	
+            uint value[2] = {stringToValue(word),'\0'};//»ñµÃÆä¶ÔÓ¦µÄÊıÖµ
+            result.concat( qstr2charStr( QString::fromUcs4(value) ) );//½«Æä×ª»¯ÎªCharStringºó¼ÓÈëµ½resultÄ©Î²
 		}else{//Èç¹ûÕÒ²»µ½ÕâÑùµÄ´®ÁË
 			if(right < sentence.size()-1){//ËµÃ÷½áÎ²ÓĞ·Çunicode×Ö·û´®
 				result.concat(sentence.subString(right+1, sentence.size()));
 			}
 			break;//Ôò¿ÉÒÔÍË³öÁË
 		}
-	}
-
-	return result;
+	}    
+    return result;
 }
+

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -32,7 +32,10 @@ SOURCES += \
     Dictionary.cpp \
     DocList.cpp \
     SearchEngine.cpp \
-    Record.cpp
+    Record.cpp \
+    WebsiteProcessor.cpp \
+    Converter.cpp \
+    convert_qstr_str.cpp
 
 HEADERS += \
         dialog.h \
@@ -43,7 +46,11 @@ HEADERS += \
     DocList.h \
     Stack.h \
     SearchEngine.h \
-    Record.h
+    Record.h \
+    WebsiteProcessor.h \
+    Converter.h \
+    convert_qstr_str.h \
+    parameter.h
 
 FORMS += \
         dialog.ui
