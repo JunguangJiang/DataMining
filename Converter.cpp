@@ -14,6 +14,36 @@ int inline stringToValue(const CharString& string){//»ñµÃÒ»¸ö×Ö·û´®µÄÊýÖµ´óÐ¡
 
 CharString UnicodeToChinese(const CharString& sentence){//½«Unicode±àÂë×ª»¯ÎªÖÐÎÄ
     CharString result;//·µ»ØµÄÖÐÎÄ×Ö·û´®
+    int left=-1, right=-1;
+    while(true){//ÔÚÔ­À´µÄunicode×Ö·û´®ÖÐ
+        left = sentence.indexOf("&", left+1);//ÕÒµ½ÐÎÈç"&#25105;"µÄ×Ó´®µÄ¿ªÍ·
+        if(left >= 0){
+            if( (right+1) < left ){//Èç¹û[right+1, left)Ö®¼ä´æÔÚ·Çunicode×Ö·û´®
+                result.concat( sentence.subString(right+1, left) );//½«ÆäÖ±½Ó¼ÓÈëµ½½á¹û×Ö·û´®ÖÐ
+            }
+            right = sentence.indexOf(";", right+1);//ÕÒµ½ÐÎÈç"&#25105;"µÄ×Ó´®µÄ½áÎ²
+            if(sentence[left+1] == '#'){//ËµÃ÷ÊÇ&#25105;Ö®ÀàµÄ×Ö·û
+                CharString word = sentence.subString(left+2, right);//È¡³öÆäÖÐµÄÊý×Ö²¿·Ö25105
+                uint value[2] = {stringToValue(word),'\0'};//»ñµÃÆä¶ÔÓ¦µÄÊýÖµ
+                result.concat( qstr2charStr( QString::fromUcs4(value) ) );//½«Æä×ª»¯ÎªCharStringºó¼ÓÈëµ½resultÄ©Î²
+            }else if(sentence[left+1] == 'n'){//ËµÃ÷ÊÇ&nbsp;Ö®ÀàµÄ×Ö·û
+                result.concat(CharString(" "));//¼ÓÈë¿Õ¸ñ
+            }
+        }else{//Èç¹ûÕÒ²»µ½ÕâÑùµÄ´®ÁË
+            if(right < sentence.size()-1){//ËµÃ÷½áÎ²ÓÐ·Çunicode×Ö·û´®
+                result.concat(sentence.subString(right+1, sentence.size()));
+            }
+            break;//Ôò¿ÉÒÔÍË³öÁË
+        }
+    }
+    return result;
+}
+
+
+
+/*
+CharString UnicodeToChinese(const CharString& sentence){//½«Unicode±àÂë×ª»¯ÎªÖÐÎÄ
+    CharString result;//·µ»ØµÄÖÐÎÄ×Ö·û´®
 	int left=-1, right=-1;
 	while(true){//ÔÚÔ­À´µÄunicode×Ö·û´®ÖÐ
 		left = sentence.indexOf("&#", left+1);//ÕÒµ½ÐÎÈç"&#25105;"µÄ×Ó´®µÄ¿ªÍ·
@@ -35,4 +65,4 @@ CharString UnicodeToChinese(const CharString& sentence){//½«Unicode±àÂë×ª»¯ÎªÖÐÎ
 	}    
     return result;
 }
-
+*/

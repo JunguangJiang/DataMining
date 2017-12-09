@@ -47,7 +47,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="detailedResultEdit"/>
+    <widget class="QTextBrowser" name="detailedResultEdit"/>
    </item>
   </layout>
  </widget>

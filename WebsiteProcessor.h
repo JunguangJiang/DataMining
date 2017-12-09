@@ -39,7 +39,10 @@ public:
 	
     void downloadWebsite(const CharString& url, const CharString& filename);
 	//下载url网页到本地文件filename
-	
+    std::shared_ptr<CharString> downloadWebsite(const CharString &url);
+    //下载url网页，返回网页源码的字符串
+
+    void processSourceCode(std::shared_ptr<const CharString> sourceCode, std::ofstream& out, bool removeUselessWords);
 	void processHtml(const CharString& htmlText, std::ofstream& out, bool removeUselessWords);
 	//处理本地文件htmlText，并将结果输出到out中 
 

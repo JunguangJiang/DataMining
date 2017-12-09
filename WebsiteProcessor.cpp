@@ -43,6 +43,20 @@ void WebsiteProcessor::downloadWebsite(const CharString& url, const CharString& 
     file.close();
 }
 
+std::shared_ptr<CharString> WebsiteProcessor::downloadWebsite(const CharString& url){ //ÏÂÔØurlÍøÒ³,·µ»Ø×Ö·û´®
+    QUrl qUrl ( charStr2qstr(url) );
+    QNetworkAccessManager manager;
+    QEventLoop loop;
+    QNetworkReply *reply = manager.get(QNetworkRequest(qUrl));//·¢ËÍÏÂÔØÍøÒ³Ô´ÂëµÄÇëÇó
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));//µ±ÏÂÔØ³É¹¦ºó£¬½áÊøÁ¬½Ó
+    loop.exec();
+    QTextCodec *codec = QTextCodec::codecForName("GBK");//ÉèÖÃÍøÒ³µÄ±àÂëÎªGBK±àÂë
+    std::shared_ptr<CharString> sourceCode =
+            std::make_shared<CharString>(qstr2str(codec->toUnicode(reply->readAll())));//½«Ô´Âë´æµ½sourceCodeÖĞ
+    return sourceCode;
+}
+
+
 NodePosi WebsiteProcessor::readOnePairOfBracket(const CharString& string, int& i){
 	//´Ó×Ö·û´®stringµÄµÚi¸öÎ»ÖÃ¿ªÊ¼¶ÁÈ¡Ò»¶ÔÆ¥ÅäµÄÀ¨ºÅ£¬
 	//²¢·µ»ØÕâ¶ÔÀ¨ºÅ×é³ÉµÄ½Úµã
@@ -99,6 +113,102 @@ CharString WebsiteProcessor::getText(const CharString& string){//ÇóÈ¡Ò»¸ö×Ö·û´®µ
 int WebsiteProcessor::getFirstLeftBracket(const CharString& string, int i){
 	//»ñµÃ×Ö·û´®string´ÓµÚi¸öÎ»ÖÃÆğµÚÒ»¸ö×óÀ¨ºÅµÄÎ»ÖÃ
 	return string.indexOf("<", i);
+}
+
+void WebsiteProcessor::processSourceCode(std::shared_ptr<const CharString> sourceCode, std::ofstream& out, bool removeUselessWords){
+    //-----------------½ÓÏÂÀ´¶Ô×Ö·û´®string½øĞĞ´¦Àí----------------------------------
+    Stack<CharString> divClassStack;//´æ´¢µ±Ç°Î»ÖÃÍâ²ãµÄËùÓĞdivµÄclass
+    divClassStack.push(CharString(""));//ÔÚÕ»µ×¼ÓÒ»¸öÉÚ±ø
+
+    Stack<NodePosi> nodeStack;//´æ´¢ÒÑ¾­ËùÓĞ½ÚµãÀàĞÍÎª×ó½çµÄ½Úµã£¬²¢ÇÒÕâĞ©½Úµã¶ÔÓ¦µÄÓÒ½ç¶¼»¹Ã»ÓĞÉ¨Ãèµ½
+
+    vector<shared_ptr<CharString>> z_a;//·¢Ìû´óÀà£¬·¢ÌûĞ¡Àà¡¢·¢Ìû±êÌâ
+    vector<shared_ptr<CharString>> td_tf;//ÕıÎÄ
+    vector<shared_ptr<CharString>> authi_a;//·¢ÌûÈË
+    vector<shared_ptr<CharString>> authi_em;//·¢ÌûÈÕÆÚ
+    vector<shared_ptr<CharString>> tszh1_a;//·¢Ìû·ÖÀà¡¢·¢Ìû±êÌâ
+
+    Record record;//Ò»Ìõ¼ÇÂ¼
+
+    for(int i=0; i<sourceCode->size(); ){
+        i = getFirstLeftBracket(*sourceCode, i);//ÕÒµ½µÚÒ»¸ö×óÀ¨ºÅ
+        if(i<0)//Èç¹û´ËÊ±ÒÑ¾­ÕÒ²»µ½¶àÓàµÄÀ¨ºÅÁË£¬
+            break;//ÔòÍ£Ö¹²éÕÒ
+
+        NodePosi node = readOnePairOfBracket(*sourceCode, i);
+        //¶ÁÈëÒ»¶ÔÆ¥ÅäµÄÀ¨ºÅËù¹¹³ÉµÄ½Úµã,²¢ÇÒi±»×Ô¶¯¸üĞÂµ½ÓÒÀ¨ºÅÓÒ±ßµÄÎ»ÖÃ
+
+        switch (node->matchingType)//¸ù¾İ½ÚµãµÄÀàĞÍ,Èôµ±Ç°½ÚµãÊÇ
+        {
+        case SelfMatched://×ÔÆ¥Åä£¬²»×ö´¦Àí
+            break;
+        case Left://×ó½ç
+            if(node->m_tag == "div"){//Èô½ÚµãµÄ±êÇ©ÊÇ"div"
+                divClassStack.push(node->m_class);//Ôò¼ÇÂ¼½ÚµãµÄclass
+            }
+            nodeStack.push(node);//²¢½«½ÚµãÑ¹Õ»
+            break;
+        case Right://ÓÒ½ç
+            if(nodeStack.empty()){//¼ÙÈçÕ»ÖĞÃ»ÓĞ½Úµã,ËµÃ÷³öÏÖÎÊÌâ
+                std::cout << "error in  match"<<endl;
+                break;
+            }else if(nodeStack.top()->m_tag == "a"){//Èô½ÚµãµÄ±êÇ©ÊÇ"a"
+                if(divClassStack.top() == "z"){//²¢ÇÒËùÔÚµÄdivÎªz£¬Ôò
+                    shared_ptr<CharString> content(new CharString);//¶ÔÓ¦·¢Ìû´óÀà¡¢·¢ÌûĞ¡Àà¡¢·¢Ìû±êÌâ
+                    *content = sourceCode->subString(nodeStack.top()->right+1, node->left);//È¡µÃÎÄ±¾ÄÚÈİ
+                    z_a.push_back(content);//½«Æä´æ´¢ÔÚz_aÖĞ
+                }else if(divClassStack.top() == "ts z h1"){//²¢ÇÒËùÔÚµÄdivÎªts z h1,Ôò
+                    shared_ptr<CharString> content(new CharString);//¶ÔÓ¦·¢Ìû·ÖÀà¡¢·¢Ìû±êÌâ
+                    *content = sourceCode->subString(nodeStack.top()->right+2, node->left-1);//´Ë´¦½«Íâ²àµÄ"[" "]"Ò»²¢È¥³ıÁË,µÃµ½ÎÄ±¾ÄÚÈİ
+                    tszh1_a.push_back(content);//½«Æä´æ´¢ÔÚtszh1_aÖĞ
+                }else if(divClassStack.top() == "authi"){//²¢ÇÒËùÔÚµÄdivÎªauthi£¬Ôò
+                    shared_ptr<CharString> content(new CharString);//¶ÔÓ¦·¢ÌûÈË
+                    *content = sourceCode->subString(nodeStack.top()->right+1, node->left);//È¡µÃÎÄ±¾ÄÚÈİ
+                    authi_a.push_back(content);//½«Æä´æ´¢ÔÚauthi_aÖĞ
+                }
+            }else if(nodeStack.top()->m_tag == "td"){//Èç¹ûÊÇ±êÇ©Îªtd
+                if(nodeStack.top()->m_class == "t_f"){//²¢ÇÒÀàĞÍÎªt_f,Ôò
+                    shared_ptr<CharString> content(new CharString);//¶ÔÓ¦·¢ÌûÄÚÈİ
+                    *content = getText( sourceCode->subString(nodeStack.top()->right+1, node->left) );//³ıÈ¥¶àÓàµÄ±êÇ©ÄÚÈİ
+                    content->removeSpace();//³ıÈ¥¶àÓàµÄ¿Õ¸ñ
+                    td_tf.push_back(content);//´æÈëtd_tfÖĞ
+                }
+            }else if(nodeStack.top()->m_tag == "em"){//Èç¹û±êÇ©ÊÇem
+                if(divClassStack.top() == "authi"){//²¢ÇÒËùÔÚµÄdivÎªauthi£¬Ôò
+                    shared_ptr<CharString> content(new CharString);//¶ÔÓ¦·¢ÌûÈÕÆÚ
+                    *content = sourceCode->subString(nodeStack.top()->right+7, node->left-9);//½ØÈ¡ÈÕÆÚ¶Î
+                    authi_em.push_back(content);//½«Æä´æÔÚauthi_emÖĞ
+                }
+            }else if(nodeStack.top()->m_tag == "div"){//Èç¹û±êÇ©ÊÇdiv
+                divClassStack.pop();//Ôò×îÄÚ²ãµÄdiv½áÊø
+            }
+            nodeStack.pop();//½Úµã³öÕ»
+            break;
+        default:
+            break;
+        }
+    }
+
+    if(z_a.size()<5 || tszh1_a.empty() || authi_a.empty() || authi_em.empty()//¶ÔÓÚÎŞ·¨»ñÈ¡ĞÅÏ¢µÄÇé¿ö
+        || td_tf.empty()//·¢ÌûÄÚÈİ
+            ){
+            out << endl;
+            return;
+    }
+    record.category = *z_a[2];//´óÀà
+    record.subclass = *z_a[3];//Ğ¡Àà
+    record.title = *z_a[4];//±êÌâ
+    record.type = *tszh1_a[0];//ÀàĞÍ
+    record.userName = *authi_a[0];//·¢ÌûÈË
+    record.date = *authi_em[0];//·¢ÌûÈÕÆÚ
+    record.content = UnicodeToChinese(*td_tf[0]);//·¢ÌûÄÚÈİ
+
+    //½«½á¹ûÊä³öµ½Êä³öÁ÷
+    out << record.category << "||" << record.subclass << "||" << record.title << "||"
+        << record.content << "||" << record.userName << "||" << record.date << "||"
+        << record.type << "||"
+        << divideWords(record.title, removeUselessWords) << divideWords(record.content, removeUselessWords)//Êä³ö·Ö´Ê½á¹û
+        << endl;
 }
 
 void WebsiteProcessor::processHtml(const CharString& htmlText, std::ofstream& out, bool removeUselessWords){
@@ -212,13 +322,6 @@ void WebsiteProcessor::processHtml(const CharString& htmlText, std::ofstream& ou
 			<< record.type << "||" 
 			<< divideWords(record.title, removeUselessWords) << divideWords(record.content, removeUselessWords)//Êä³ö·Ö´Ê½á¹û
 			<< endl;
-		/*
-		out << record.category << "," << record.subclass << "," << record.title << ","
-			<< record.content << "," << record.userName << "," << record.date << "," 
-			<< record.type << "," 
-			<< divideWords(record.title, removeUselessWords) << divideWords(record.content, removeUselessWords)//Êä³ö·Ö´Ê½á¹û
-			<< endl;
-		*/
 		outfile.close();//¹Ø±ÕÎÄ¼ş
 	}
 }
@@ -236,7 +339,7 @@ void WebsiteProcessor::readURL(std::ifstream& in, CharString& url)//¶ÁÈëÊäÈëÁ÷in
 
 void WebsiteProcessor::process(std::ifstream& in, std::ofstream& out, bool removeUselessWords){
 	//´¦ÀíÊäÈëÁ÷inÖĞµÄËùÓĞÍøÒ³£¬²¢½«½á¹ûÊä³öµ½Êä³öÁ÷outÖĞ
-	//Èç¹ûremoveUselessWordsÎªtrue£¬Ôò·Ö´Ê½á¹û¾Í»áÉ¾³ıÎŞÓÃ´Ê£»Îªfalse£¬Ôò±£ÁôÎŞÓÃ´Ê
+    //Èç¹ûremoveUselessWordsÎªtrue£¬Ôò·Ö´Ê½á¹û¾Í»áÉ¾³ıÎŞÓÃ´Ê£»Îªfalse£¬Ôò±£ÁôÎŞÓÃ
 
 	string temp;
 	getline(in, temp);//¶ÁÈëµÄµÚÒ»ĞĞµÄÄÚÈİÎŞÓÃ
@@ -245,17 +348,20 @@ void WebsiteProcessor::process(std::ifstream& in, std::ofstream& out, bool remov
 	out << "\"·¢ÌûÄÚÈİ\",\"·¢ÌûÈË\",\"·¢ÌûÈÕÆÚ\",\"·¢ÌûÀàĞÍ\",\"·Ö´Ê½á¹û\"";
 	out << endl;
 	int id = 1;
+
 	while(!in.eof()){//Ò»Ö±ÊäÈëµ½ÎÄ¼şÄ©Î²
 		CharString url;
 		readURL(in, url);//¶ÁÈëÍøÒ³µÄurl
 		if(in.eof()) break;
         CharString filename("temp.html");//±¾µØÎÄ¼ş
 		cout << "downloading "<< url<<endl;
-		downloadWebsite(url, filename);//½«ÍøÒ³ÏÂÔØµ½±¾µØÎÄ¼şfilename
+        downloadWebsite(url, filename);//½«ÍøÒ³Ô´ÂëÏÂÔØµ½±¾µØÎÄ¼ş
+        //std::shared_ptr<const CharString> sourceCode = downloadWebsite(url);//½«ÍøÒ³ÏÂÔØµ½×Ö·û´®sourceCode
 		out << id++ << "||" << url << "||" ;//ÏÈÊä³öĞòºÅºÍÍøÒ³url
 		cout << "processing "<< url<<endl;
-		processHtml(filename, out, removeUselessWords);//È»ºó´¦Àí±¾µØÎÄ¼şfilename£¬½«´¦ÀíºóµÄĞÅÏ¢Êä³öµ½Êä³öÁ÷
-		cout << "finishing "<< url<<endl;
+        //processSourceCode(sourceCode, out, removeUselessWords);//È»ºó´¦ÀíÔ´Âë£¬½«´¦ÀíºóµÄĞÅÏ¢Êä³öµ½Êä³öÁ÷
+        processHtml(filename, out, removeUselessWords);//È»ºó´¦Àí±¾µØÎÄ¼şfilename£¬½«´¦ÀíºóµÄĞÅÏ¢Êä³öµ½Êä³öÁ÷
+        cout << "finishing "<< id << " websites"<<endl;
 	}
 }
 
