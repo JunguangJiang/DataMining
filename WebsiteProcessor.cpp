@@ -126,7 +126,7 @@ CharString WebsiteProcessor::getOuterText(const CharString& string){//删除一个字
         NodePosi node = readOnePairOfBracket(string, i);
         //读入一对匹配的括号所构成的节点,并且i被自动更新到右括号右边的位置
         if(!node) break;//如果不存在node，则可退出循环
-        left = i;//更新left的位置
+        left = i+1;//更新left的位置
 
         switch (node->matchingType)//根据节点的类型,若当前节点是
         {

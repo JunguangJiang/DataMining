@@ -6,19 +6,6 @@
 #include "Stack.h"
 using namespace std;
 
-static size_t hashCode(const char* string){//生成字符串的循环移位散列码
-	unsigned int h = 0;//散列码
-	for(size_t n = strlen(string), i = 0; i < n; i++){
-		h = ( h << 5 ) | ( h >> 27 ); 
-		h += (unsigned int)string[i];//散列码循环左移5位，再累加当前字符
-	}
-	return (size_t) h ;
-}
-
-static size_t hashCode(const CharString& string){
-	return hashCode(string.data());
-}
-
 bool inline isASCII(char c){//判断某个字符是否是ASCII码:目前将字母、数字、英文的标点符号都算作此列，不考虑换行符等
 	int d = (int)c;
 	return (d<127)&&(d>31);//ASCII表中的一些字符

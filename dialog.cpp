@@ -9,6 +9,7 @@
 #include "WebsiteProcessor.h"
 #include "parameter.h"
 #include <QFileInfo>
+#include <QTime>
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
@@ -19,18 +20,26 @@ Dialog::Dialog(QWidget *parent) :
     searchEngine = new SearchEngine(10);//设置权重为10
     searchEngine->initDictionary();//初始化词典
     QFileInfo downloadResultFile (DownloadResultFile);
+    QTime time;time.start();//记录运行时间
     //if(true){
     if(!downloadResultFile.isFile() ){//如果之前没有下载网页源码
         qDebug() << DownloadResultFile << " doesn't exist";
         WebsiteProcessor websiteProcessor;//则需要先将所有的网页源码下载到本地
         websiteProcessor.initDictionary();//初始化词典
         websiteProcessor.extractInfo(CharString(URLFile), CharString(DownloadResultFile), true);//浏览整个网页，去除无用词
+        qDebug()<<str2qstr("网页提取耗时：")<< time.elapsed()/1000.0/60<<"min";
+        time.restart();//重新开始计时
     }
     searchEngine->buildInvertedFile(CharString(DownloadResultFile), CharString(InvertedDocumentFile));
+    qDebug()<<str2qstr("构建倒排文档耗时：")<< time.elapsed()/1000.0<<"s";
 
     //CharString queryFile("query.txt");
     //CharString resultFile("result.txt");
     //searchEngine->query(queryFile, resultFile);
+    /*
+     * "网页提取耗时：" 23.0651 min
+     * "构建倒排文档耗时：" 0.584 s
+     */
 }
 
 Dialog::~Dialog()

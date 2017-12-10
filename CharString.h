@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <windows.h>
 class CharString
 {
 private:
@@ -57,7 +58,21 @@ public:
 	bool operator<(const CharString& string);
 	bool operator>=(const CharString& string);
 	bool operator>(const CharString& string);
+    bool operator!=(const CharString& string);
 
 	std::vector<CharString> split(const CharString& c) const;//用字符串c将string划分成多个字符串，并返回
 };
+
+static size_t hashCode(const char* string){//生成字符串的循环移位散列码
+    unsigned int h = 0;//散列码
+    for(size_t n = strlen(string), i = 0; i < n; i++){
+        h = ( h << 5 ) | ( h >> 27 );
+        h += (unsigned int)string[i];//散列码循环左移5位，再累加当前字符
+    }
+    return (size_t) h ;
+}
+
+static size_t hashCode(const CharString& string){
+    return hashCode(string.data());
+}
 

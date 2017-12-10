@@ -9,4 +9,5 @@
 #define QueryFile "query.txt"//查询文件
 #define QueryResultFile "result.txt"//查询结果文件
 #define InvertedDocumentFile "output/invertedFile.txt"//倒排后得到的文件
+#define PrimNumberList "Dictionary/prime-1048576-bitmap.txt"//素数表
 #endif // PARAMETER_H

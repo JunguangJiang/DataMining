@@ -35,7 +35,10 @@ SOURCES += \
     Record.cpp \
     WebsiteProcessor.cpp \
     Converter.cpp \
-    convert_qstr_str.cpp
+    convert_qstr_str.cpp \
+    termword.cpp \
+    hash.cpp \
+    bitmap.cpp
 
 HEADERS += \
         dialog.h \
@@ -50,7 +53,10 @@ HEADERS += \
     WebsiteProcessor.h \
     Converter.h \
     convert_qstr_str.h \
-    parameter.h
+    parameter.h \
+    termword.h \
+    hash.h \
+    bitmap.h
 
 FORMS += \
         dialog.ui

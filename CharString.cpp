@@ -235,6 +235,10 @@ bool CharString::operator>(const CharString& string){
 	return _size > string.size();//则判断二者的长度
 }
 
+bool CharString::operator!=(const CharString& string){
+    return !(*this==string);
+}
+
 vector<CharString> CharString::split(const CharString& c) const{
 	int i = 0, j = 0;
 	vector<CharString> result;
