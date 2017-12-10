@@ -14,10 +14,12 @@ Dialog::Dialog(QWidget *parent) :
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+    ui->urlBrowser->setMaximumHeight(30);
     standardItemModel = new QStandardItemModel(this);
     searchEngine = new SearchEngine(10);//设置权重为10
     searchEngine->initDictionary();//初始化词典
     QFileInfo downloadResultFile (DownloadResultFile);
+    //if(true){
     if(!downloadResultFile.isFile() ){//如果之前没有下载网页源码
         qDebug() << DownloadResultFile << " doesn't exist";
         WebsiteProcessor websiteProcessor;//则需要先将所有的网页源码下载到本地
@@ -63,7 +65,6 @@ void Dialog::on_detailedListView_doubleClicked(const QModelIndex &index)
     int DocID = index.data().toString().split(" ").at(1).toInt();//得到被点击的那一行对应的文档编号
     Record record = searchEngine->getNthRecord(DocID);//得到对应的记录
 
-    ui->detailedResultEdit->setOpenExternalLinks(false);
     ui->detailedResultEdit->setTextColor(Qt::blue);
     ui->detailedResultEdit->setFontWeight(QFont::Bold);
     ui->detailedResultEdit->setAlignment(Qt::AlignHCenter);
@@ -82,13 +83,14 @@ void Dialog::on_detailedListView_doubleClicked(const QModelIndex &index)
     ui->detailedResultEdit->append(str2qstr(record.content.data()));//显示文档内容
     ui->detailedResultEdit->append(str2qstr(""));
 
-    ui->detailedResultEdit->setOpenExternalLinks(true);
-    ui->detailedResultEdit->setTextColor(Qt::gray);
+
+    ui->urlBrowser->setTextColor(Qt::gray);
     QString urlLink =  ("<style> a {text-decoration: none} </style> "
                         "<a href=\"" + charStr2qstr(record.url)+ "\" >"+
                         str2qstr("来源")+charStr2qstr( record.url)+
                         "</a>");//设置网页的链接
-    ui->detailedResultEdit->append(urlLink);
+    ui->urlBrowser->setHtml(urlLink);
+    ui->urlBrowser->setOpenExternalLinks(true);
 
     QString temp = ui->wordsInputEdit->text(); CharString line(qstr2str(temp));//从输入读入一组句子
     std::vector<CharString> sentences = line.split(CharString(" "));//按照空格对其切分

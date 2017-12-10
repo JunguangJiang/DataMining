@@ -49,6 +49,9 @@
    <item>
     <widget class="QTextBrowser" name="detailedResultEdit"/>
    </item>
+   <item>
+    <widget class="QTextBrowser" name="urlBrowser"/>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

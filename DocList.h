@@ -24,7 +24,7 @@ protected:
 	DocNodePosi adjust(DocNodePosi p);
 	//调整节点p使其有序 assert:无法处理p->prev<p 且p>p->succ的情况，二者至多有一个失序
 	//assert：p为非头尾节点
-	const int weight;//计算总权重时的参数，只有在链表合并时才使用weight>0!!!
+    const int weight;//计算总权重时的参数，只有在链表合并时才使用weight>0
 public:
 	DocList(int TermID = -1, const int  weight = 0);
 	~DocList(void);

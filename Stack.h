@@ -15,8 +15,8 @@ public:
 	Stack(void);
 	~Stack(void);
 	void push(T const& e);//压栈
-	void pop();//退栈
-	T& top();//获取栈顶元素
+    void pop();//退栈,assert:栈非空
+    T& top();//获取栈顶元素,assert:栈非空
 	bool empty();//判断栈顶是否为空
 };
 
@@ -56,12 +56,13 @@ void Stack<T>::push(T const& e){
 
 template <typename T>
 void Stack<T>::pop(){
-	_size--;
+    if(_size>0)
+        _size--;
 }
 
 template <typename T>
 T& Stack<T>::top(){
-	return _elem[_size-1];
+    return _elem[_size-1];
 }
 
 template <typename T>

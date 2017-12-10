@@ -34,8 +34,11 @@ private:
 
 	int getFirstLeftBracket(const CharString& string, int i);
 	//获得字符串string从第i个位置起第一个左括号的位置
+
+    CharString getOuterText(const CharString& string);//只保留最外层的文本,去除所有的标签以及标签嵌套的文本
+
 public:
-	CharString getText(const CharString& string);//求取一个字符串的文本信息，去除所有的标签信息
+    CharString removeTag(const CharString& string);//去除所有的标签信息，保留标签嵌套的文本
 	
     void downloadWebsite(const CharString& url, const CharString& filename);
 	//下载url网页到本地文件filename
